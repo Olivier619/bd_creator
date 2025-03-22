@@ -1,0 +1,4 @@
+cd /home/ubuntu/bd_creator
+git init
+git add .
+git commit -m "Initial commit"
