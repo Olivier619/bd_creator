@@ -1,6 +1,7 @@
 /**
- * BD Creator - Gestionnaire de sessions (Version corrigée)
+ * BD Creator - Gestionnaire de sessions (Version finale)
  * Ce script permet de sauvegarder et charger des sessions de création de BD
+ * Adapté pour fonctionner avec la structure de dossiers spécifique du projet
  */
 
 // Classe principale pour gérer les sessions
@@ -13,6 +14,7 @@ class SessionManager {
         // Vérifier si nous sommes sur une nouvelle session
         const isNewSession = sessionStorage.getItem('bdNewSession');
         if (isNewSession === 'true') {
+            console.log("Nouvelle session détectée");
             // Réinitialiser le marqueur
             sessionStorage.removeItem('bdNewSession');
             // Mettre à jour l'interface
@@ -182,6 +184,8 @@ class SessionManager {
     startNewSession() {
         if (confirm('Voulez-vous vraiment commencer une nouvelle session ? Les modifications non sauvegardées seront perdues.')) {
             try {
+                console.log("Démarrage d'une nouvelle session...");
+                
                 // Réinitialiser l'ID de session actuelle
                 this.currentSessionId = null;
                 
@@ -198,12 +202,31 @@ class SessionManager {
                 // Mettre à jour l'interface avant la redirection
                 this.updateCurrentSessionInfo('Nouvelle session');
                 
+                // Déterminer le chemin vers index.html en fonction de l'emplacement actuel
+                let indexPath = this.getPathToIndex();
+                
+                console.log("Redirection vers: " + indexPath);
+                
                 // Rediriger vers la page d'accueil avec un paramètre pour éviter la mise en cache
-                window.location.href = 'index.html?new=' + Date.now();
+                window.location.href = indexPath + '?new=' + Date.now();
             } catch (error) {
                 console.error('Erreur lors de la création d\'une nouvelle session:', error);
                 alert('Une erreur est survenue lors de la création d\'une nouvelle session. Veuillez réessayer.');
             }
+        }
+    }
+    
+    // Déterminer le chemin vers index.html en fonction de l'emplacement actuel
+    getPathToIndex() {
+        // Obtenir le chemin actuel
+        const currentPath = window.location.pathname;
+        console.log("Chemin actuel: " + currentPath);
+        
+        // Vérifier si nous sommes dans un sous-dossier
+        if (currentPath.includes('/js/') || currentPath.includes('/css/')) {
+            return '../index.html';
+        } else {
+            return 'index.html';
         }
     }
     
@@ -228,10 +251,16 @@ class SessionManager {
                 // Mettre à jour l'interface
                 this.updateCurrentSessionInfo(session.name);
                 
+                // Déterminer le chemin de base en fonction de l'emplacement actuel
+                let basePath = '';
+                if (window.location.pathname.includes('/js/') || window.location.pathname.includes('/css/')) {
+                    basePath = '../';
+                }
+                
                 // Rediriger vers la page appropriée en fonction des données disponibles
-                let targetPage = 'index.html';
+                let targetPage = basePath + 'index.html';
                 if (session.currentPage) {
-                    targetPage = session.currentPage;
+                    targetPage = basePath + session.currentPage;
                     // Ajouter les paramètres d'URL si présents
                     if (session.urlParams) {
                         targetPage += session.urlParams;
@@ -245,6 +274,7 @@ class SessionManager {
                     targetPage += '?ts=' + Date.now();
                 }
                 
+                console.log("Redirection vers: " + targetPage);
                 window.location.href = targetPage;
             } catch (error) {
                 console.error('Erreur lors du chargement de la session:', error);
@@ -300,7 +330,9 @@ class SessionManager {
 document.addEventListener('DOMContentLoaded', function() {
     // Petit délai pour s'assurer que le DOM est complètement chargé
     setTimeout(function() {
+        console.log("Initialisation du gestionnaire de sessions...");
         window.bdSessionManager = new SessionManager();
     }, 100);
 });
+
 
