@@ -1,5 +1,5 @@
 /**
- * BD Creator - Gestionnaire de sessions
+ * BD Creator - Gestionnaire de sessions (Version corrigée)
  * Ce script permet de sauvegarder et charger des sessions de création de BD
  */
 
@@ -9,6 +9,15 @@ class SessionManager {
         this.currentSessionId = null;
         this.sessions = this.loadAllSessions();
         this.initUI();
+        
+        // Vérifier si nous sommes sur une nouvelle session
+        const isNewSession = sessionStorage.getItem('bdNewSession');
+        if (isNewSession === 'true') {
+            // Réinitialiser le marqueur
+            sessionStorage.removeItem('bdNewSession');
+            // Mettre à jour l'interface
+            this.updateCurrentSessionInfo('Nouvelle session');
+        }
     }
 
     // Initialiser l'interface utilisateur pour la gestion des sessions
@@ -169,23 +178,32 @@ class SessionManager {
         alert('Session sauvegardée avec succès !');
     }
     
-    // Démarrer une nouvelle session
+    // Démarrer une nouvelle session (FONCTION CORRIGÉE)
     startNewSession() {
         if (confirm('Voulez-vous vraiment commencer une nouvelle session ? Les modifications non sauvegardées seront perdues.')) {
-            // Réinitialiser l'ID de session actuelle
-            this.currentSessionId = null;
-            
-            // Effacer les données de session du localStorage
-            localStorage.removeItem('bdKeywords');
-            localStorage.removeItem('bdScenario');
-            localStorage.removeItem('bdChapter');
-            localStorage.removeItem('bdStoryboard');
-            
-            // Mettre à jour l'interface
-            this.updateCurrentSessionInfo('Nouvelle session');
-            
-            // Rediriger vers la page d'accueil
-            window.location.href = 'index.html';
+            try {
+                // Réinitialiser l'ID de session actuelle
+                this.currentSessionId = null;
+                
+                // Effacer les données de session du localStorage
+                localStorage.removeItem('bdKeywords');
+                localStorage.removeItem('bdScenario');
+                localStorage.removeItem('bdChapter');
+                localStorage.removeItem('bdStoryboard');
+                
+                // Utiliser sessionStorage pour indiquer qu'il s'agit d'une nouvelle session
+                // (cela persistera pendant la redirection)
+                sessionStorage.setItem('bdNewSession', 'true');
+                
+                // Mettre à jour l'interface avant la redirection
+                this.updateCurrentSessionInfo('Nouvelle session');
+                
+                // Rediriger vers la page d'accueil avec un paramètre pour éviter la mise en cache
+                window.location.href = 'index.html?new=' + Date.now();
+            } catch (error) {
+                console.error('Erreur lors de la création d\'une nouvelle session:', error);
+                alert('Une erreur est survenue lors de la création d\'une nouvelle session. Veuillez réessayer.');
+            }
         }
     }
     
@@ -200,20 +218,37 @@ class SessionManager {
         
         // Confirmer le chargement
         if (confirm(`Voulez-vous charger la session "${session.name}" ? Les modifications non sauvegardées seront perdues.`)) {
-            // Définir la session actuelle
-            this.currentSessionId = sessionId;
-            
-            // Restaurer les données de la session
-            this.restoreSessionData(session);
-            
-            // Mettre à jour l'interface
-            this.updateCurrentSessionInfo(session.name);
-            
-            // Rediriger vers la page appropriée en fonction des données disponibles
-            if (session.currentPage) {
-                window.location.href = session.currentPage;
-            } else {
-                window.location.href = 'index.html';
+            try {
+                // Définir la session actuelle
+                this.currentSessionId = sessionId;
+                
+                // Restaurer les données de la session
+                this.restoreSessionData(session);
+                
+                // Mettre à jour l'interface
+                this.updateCurrentSessionInfo(session.name);
+                
+                // Rediriger vers la page appropriée en fonction des données disponibles
+                let targetPage = 'index.html';
+                if (session.currentPage) {
+                    targetPage = session.currentPage;
+                    // Ajouter les paramètres d'URL si présents
+                    if (session.urlParams) {
+                        targetPage += session.urlParams;
+                    }
+                }
+                
+                // Ajouter un paramètre timestamp pour éviter la mise en cache
+                if (targetPage.includes('?')) {
+                    targetPage += '&ts=' + Date.now();
+                } else {
+                    targetPage += '?ts=' + Date.now();
+                }
+                
+                window.location.href = targetPage;
+            } catch (error) {
+                console.error('Erreur lors du chargement de la session:', error);
+                alert('Une erreur est survenue lors du chargement de la session. Veuillez réessayer.');
             }
         }
     }
@@ -263,5 +298,9 @@ class SessionManager {
 
 // Initialiser le gestionnaire de sessions lorsque la page est chargée
 document.addEventListener('DOMContentLoaded', function() {
-    window.bdSessionManager = new SessionManager();
+    // Petit délai pour s'assurer que le DOM est complètement chargé
+    setTimeout(function() {
+        window.bdSessionManager = new SessionManager();
+    }, 100);
 });
+
