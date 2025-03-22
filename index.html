@@ -55,11 +55,68 @@
         .navigation {
             margin-bottom: 20px;
         }
+        
+        /* Styles pour les contrôles de session */
+        .session-controls {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .session-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .session-button {
+            background-color: #2980b9;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-right: 10px;
+            cursor: pointer;
+            border: none;
+        }
+        .session-select {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            background-color: white;
+            min-width: 200px;
+        }
+        .session-info {
+            margin-top: 10px;
+            font-style: italic;
+            color: #555;
+        }
+        #new-session-btn {
+            background-color: #27ae60;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>BD Creator</h1>
+        
+        <!-- Contrôles de session -->
+        <div class="session-controls">
+            <div class="session-buttons">
+                <button id="save-session-btn" class="session-button">Sauvegarder la session</button>
+                <button id="new-session-btn" class="session-button">Nouvelle session</button>
+                <select id="load-session-select" class="session-select">
+                    <option value="">Charger une session...</option>
+                </select>
+            </div>
+            <div id="session-info" class="session-info">
+                Session actuelle: <span id="current-session-name">Nouvelle session</span>
+            </div>
+        </div>
         
         <div class="navigation">
             <a href="index.html" class="button">Accueil</a>
@@ -130,3 +187,4 @@
     <script src="js/bd_creator_session_manager.js"></script>
 </body>
 </html>
+
