@@ -46,6 +46,7 @@
             border-radius: 5px;
             font-weight: bold;
             margin-right: 10px;
+            cursor: pointer;
         }
         .loading {
             text-align: center;
@@ -64,6 +65,42 @@
             display: flex;
             justify-content: space-between;
             margin-bottom: 20px;
+        }
+        .session-controls {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .session-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .session-button {
+            background-color: #2980b9;
+        }
+        .session-select {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            background-color: white;
+            min-width: 200px;
+        }
+        .session-info {
+            margin-top: 10px;
+            font-style: italic;
+            color: #555;
+        }
+        #new-session-btn {
+            background-color: #27ae60;
+        }
+        #delete-session-btn {
+            background-color: #e74c3c;
         }
     </style>
 </head>
@@ -90,6 +127,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Inclure le gestionnaire de sessions -->
+    <script src="bd_creator_session_manager.js"></script>
 
     <script>
         // Fonction pour récupérer les paramètres de l'URL
@@ -260,6 +300,26 @@
             
             storyboardContent.innerHTML = html;
             storyboardContent.classList.remove('loading');
+            
+            // Sauvegarder le storyboard dans le localStorage
+            saveStoryboardData(chapterId, chapterTitle, html);
+        }
+        
+        // Fonction pour sauvegarder les données du storyboard
+        function saveStoryboardData(chapterId, chapterTitle, content) {
+            const storyboardData = {
+                chapterId: chapterId,
+                chapterTitle: chapterTitle,
+                content: content,
+                timestamp: Date.now()
+            };
+            
+            localStorage.setItem('bdChapter', JSON.stringify({
+                id: chapterId,
+                title: chapterTitle
+            }));
+            
+            localStorage.setItem('bdStoryboard', JSON.stringify(storyboardData));
         }
 
         // Fonction principale qui s'exécute au chargement de la page
@@ -310,5 +370,6 @@
     </script>
 </body>
 </html>
+
 
 
