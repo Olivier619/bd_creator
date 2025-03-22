@@ -334,3 +334,24 @@
     </script>
 </body>
 </html>
+<script>
+// Solution directe pour le bouton "Nouvelle session"
+document.addEventListener('DOMContentLoaded', function() {
+    const newButton = document.getElementById('new-session-btn');
+    if (newButton) {
+        newButton.onclick = function() {
+            if (confirm('Voulez-vous vraiment commencer une nouvelle session ? Les modifications non sauvegardées seront perdues.')) {
+                // Effacer les données de session
+                localStorage.removeItem('bdKeywords');
+                localStorage.removeItem('bdScenario');
+                localStorage.removeItem('bdChapter');
+                localStorage.removeItem('bdStoryboard');
+                localStorage.removeItem('currentSessionId');
+                
+                // Redirection directe
+                window.location.href = 'index.html';
+            }
+        };
+    }
+});
+</script>
