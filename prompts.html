@@ -123,6 +123,101 @@
             });
         }
 
+        // Fonction pour convertir une description en prompt Midjourney
+        function descriptionToPrompt(description, chapterId, pageNum, caseNum) {
+            // Extraire les éléments clés de la description
+            const keywords = extractKeywords(description);
+            
+            // Déterminer le style en fonction du chapitre
+            let style, mood, lighting;
+            
+            switch(parseInt(chapterId)) {
+                case 1: // Le Début du Voyage
+                    style = "style de bande dessinée européenne, ligne claire";
+                    mood = "mystérieux, plein de curiosité";
+                    lighting = "lumière douce, lueurs mystérieuses";
+                    break;
+                case 2: // Rencontres Inattendues
+                    style = "style manga détaillé, encre noire";
+                    mood = "tension, méfiance, nouvelles alliances";
+                    lighting = "contrastes marqués, ombres dramatiques";
+                    break;
+                case 3: // L'Épreuve du Feu
+                    style = "style dramatique, couleurs chaudes";
+                    mood = "courage, détermination, adversité";
+                    lighting = "éclairage dramatique, tons orangés et rouges";
+                    break;
+                case 4: // Révélations
+                    style = "style mystique, couleurs éthérées";
+                    mood = "révélation, compréhension, vérité";
+                    lighting = "lumière éthérée, rayons lumineux";
+                    break;
+                case 5: // Le Dénouement
+                    style = "style épique, composition grandiose";
+                    mood = "résolution, triomphe, transformation";
+                    lighting = "lumière éclatante, aube d'un nouveau jour";
+                    break;
+                default:
+                    style = "style bande dessinée détaillé";
+                    mood = "aventure, fantasy";
+                    lighting = "éclairage équilibré";
+            }
+            
+            // Construire le prompt en utilisant les éléments de la description
+            let prompt = `/imagine ${keywords.join(", ")}, ${mood}, ${style}, ${lighting}, case de bande dessinée, composition dynamique, détails précis --ar 2:3 --v 5.2`;
+            
+            return prompt;
+        }
+        
+        // Fonction pour extraire les mots-clés importants d'une description
+        function extractKeywords(description) {
+            // Supprimer les articles et mots courants
+            const wordsToRemove = ["le", "la", "les", "un", "une", "des", "du", "de", "notre", "héros", "qui", "que", "avec", "pour", "dans", "sur", "par", "au", "aux", "et", "ou", "à", "se"];
+            
+            // Convertir la description en mots
+            let words = description.toLowerCase().replace(/[.,;:!?]/g, '').split(' ');
+            
+            // Filtrer les mots courts et les mots à supprimer
+            words = words.filter(word => word.length > 2 && !wordsToRemove.includes(word));
+            
+            // Identifier les groupes de mots importants (noms + adjectifs)
+            const importantPhrases = [];
+            
+            // Analyser la description pour des éléments spécifiques
+            if (description.includes("artefact")) importantPhrases.push("ancient artifact");
+            if (description.includes("portail")) importantPhrases.push("mystical portal");
+            if (description.includes("briller") || description.includes("lumière")) importantPhrases.push("glowing light");
+            if (description.includes("silhouette") || description.includes("mystérieuse")) importantPhrases.push("mysterious figure");
+            if (description.includes("paysage")) importantPhrases.push("fantasy landscape");
+            if (description.includes("alliés") || description.includes("personnage")) importantPhrases.push("diverse characters");
+            if (description.includes("créatures")) importantPhrases.push("fantasy creatures");
+            if (description.includes("ennemi") || description.includes("masqué")) importantPhrases.push("masked villain");
+            if (description.includes("pouvoir")) importantPhrases.push("magical powers");
+            if (description.includes("flammes") || description.includes("feu")) importantPhrases.push("wall of fire");
+            if (description.includes("combat")) importantPhrases.push("epic battle");
+            if (description.includes("pont")) importantPhrases.push("dangerous bridge over chasm");
+            if (description.includes("duel")) importantPhrases.push("dramatic duel");
+            if (description.includes("bibliothèque")) importantPhrases.push("ancient library");
+            if (description.includes("temple")) importantPhrases.push("hidden temple");
+            if (description.includes("vision")) importantPhrases.push("mystical vision");
+            if (description.includes("prophétie")) importantPhrases.push("ancient prophecy");
+            if (description.includes("bataille")) importantPhrases.push("epic battle");
+            if (description.includes("choix")) importantPhrases.push("moment of choice");
+            
+            // Si aucune phrase spécifique n'a été identifiée, utiliser les mots filtrés
+            if (importantPhrases.length === 0) {
+                // Prendre jusqu'à 5 mots aléatoires parmi les mots filtrés
+                const selectedWords = [];
+                const shuffledWords = words.sort(() => 0.5 - Math.random());
+                for (let i = 0; i < Math.min(5, shuffledWords.length); i++) {
+                    selectedWords.push(shuffledWords[i]);
+                }
+                return selectedWords;
+            }
+            
+            return importantPhrases;
+        }
+
         // Fonction pour générer des prompts Midjourney pour un chapitre
         function generatePrompts(chapterId, chapterTitle) {
             const promptsContent = document.getElementById('prompts-content');
@@ -147,8 +242,8 @@
                 const caseCount = Math.floor(Math.random() * 5) + 3;
                 
                 for (let j = 1; j <= caseCount; j++) {
-                    // Générer des prompts fictifs basés sur le chapitre
-                    let promptText, description;
+                    // Générer des descriptions fictives basées sur le chapitre
+                    let description;
                     
                     if (chapterId == 1) {
                         // Chapitre 1: Le Début du Voyage
@@ -163,18 +258,6 @@
                         ];
                         
                         description = descriptions[Math.floor(Math.random() * descriptions.length)];
-                        
-                        const styles = [
-                            "style de bande dessinée européenne, ligne claire",
-                            "style manga détaillé, encre noire",
-                            "aquarelle douce, couleurs pastel",
-                            "illustration fantasy moderne",
-                            "style graphique épuré, couleurs vives"
-                        ];
-                        
-                        const style = styles[Math.floor(Math.random() * styles.length)];
-                        
-                        promptText = `/imagine a young adventurer discovering a glowing ancient artifact, curious expression, ${style}, detailed background, dramatic lighting --ar 2:3 --v 5.2`;
                     } 
                     else if (chapterId == 2) {
                         // Chapitre 2: Rencontres Inattendues
@@ -189,18 +272,6 @@
                         ];
                         
                         description = descriptions[Math.floor(Math.random() * descriptions.length)];
-                        
-                        const styles = [
-                            "style bande dessinée franco-belge",
-                            "style manga shonen dynamique",
-                            "illustration fantasy détaillée",
-                            "style graphique moderne, couleurs contrastées",
-                            "style semi-réaliste, éclairage cinématographique"
-                        ];
-                        
-                        const style = styles[Math.floor(Math.random() * styles.length)];
-                        
-                        promptText = `/imagine protagonist meeting strange allies in a fantasy world, colorful clothing, expressive faces, ${style}, detailed environment, dynamic composition --ar 2:3 --v 5.2`;
                     }
                     else if (chapterId == 3) {
                         // Chapitre 3: L'Épreuve du Feu
@@ -215,18 +286,6 @@
                         ];
                         
                         description = descriptions[Math.floor(Math.random() * descriptions.length)];
-                        
-                        const styles = [
-                            "style dramatique, couleurs chaudes",
-                            "style manga intense, lignes dynamiques",
-                            "illustration héroïque, contraste fort",
-                            "style bande dessinée américaine, action",
-                            "style semi-réaliste, éclairage dramatique"
-                        ];
-                        
-                        const style = styles[Math.floor(Math.random() * styles.length)];
-                        
-                        promptText = `/imagine hero facing a wall of fire, determined expression, trial by fire, ${style}, intense atmosphere, dramatic lighting, action scene --ar 2:3 --v 5.2`;
                     }
                     else if (chapterId == 4) {
                         // Chapitre 4: Révélations
@@ -241,18 +300,6 @@
                         ];
                         
                         description = descriptions[Math.floor(Math.random() * descriptions.length)];
-                        
-                        const styles = [
-                            "style mystique, couleurs éthérées",
-                            "style bande dessinée contemplative",
-                            "illustration détaillée, ambiance mystérieuse",
-                            "style manga introspectif, moments de révélation",
-                            "style symbolique, composition significative"
-                        ];
-                        
-                        const style = styles[Math.floor(Math.random() * styles.length)];
-                        
-                        promptText = `/imagine character discovering ancient library with forgotten secrets, moment of revelation, ${style}, mystical atmosphere, glowing artifacts, detailed ancient architecture --ar 2:3 --v 5.2`;
                     }
                     else if (chapterId == 5) {
                         // Chapitre 5: Le Dénouement
@@ -267,31 +314,24 @@
                         ];
                         
                         description = descriptions[Math.floor(Math.random() * descriptions.length)];
-                        
-                        const styles = [
-                            "style épique, composition grandiose",
-                            "style bande dessinée climactique",
-                            "illustration finale dramatique",
-                            "style manga épique, moment décisif",
-                            "style cinématique, plan large impressionnant"
-                        ];
-                        
-                        const style = styles[Math.floor(Math.random() * styles.length)];
-                        
-                        promptText = `/imagine epic final battle, hero using artifact to close portal between worlds, ${style}, dramatic sky, energy effects, climactic moment, detailed environment --ar 2:3 --v 5.2`;
                     }
                     else {
                         // Chapitre par défaut si l'ID n'est pas reconnu
                         description = `Description de la case ${j} (chapitre ${chapterId}, page ${i})`;
-                        promptText = `/imagine comic book panel, fantasy adventure, detailed scene, vibrant colors --ar 2:3 --v 5.2`;
                     }
+                    
+                    // Générer un prompt basé sur la description
+                    const promptText = descriptionToPrompt(description, chapterId, i, j);
+                    
+                    // Échapper les apostrophes pour éviter les problèmes avec l'attribut onclick
+                    const escapedPrompt = promptText.replace(/'/g, "\\'");
                     
                     html += `
                     <div class="prompt-card">
                         <h4>Case ${j} - Page ${i}</h4>
                         <p><strong>Description :</strong> ${description}</p>
                         <div class="prompt-text">${promptText}</div>
-                        <button class="button copy-button" onclick="copyToClipboard('${promptText}', this)">Copier le prompt</button>
+                        <button class="button copy-button" onclick="copyToClipboard('${escapedPrompt}', this)">Copier le prompt</button>
                     </div>`;
                 }
             }
@@ -331,6 +371,7 @@
     </script>
 </body>
 </html>
+
 
     
     <script src="js/main.js"></script>
