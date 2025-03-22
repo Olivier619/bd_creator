@@ -23,20 +23,12 @@
         h1, h2, h3, h4 {
             color: #333;
         }
-        .prompt-card {
+        .prompt-box {
             margin-bottom: 20px;
             padding: 15px;
             background-color: #f9f9f9;
             border-radius: 5px;
-            border-left: 4px solid #9b59b6;
-        }
-        .prompt-text {
-            background-color: #f1e5f9;
-            padding: 15px;
-            border-radius: 5px;
-            font-family: monospace;
-            white-space: pre-wrap;
-            margin-top: 10px;
+            border-left: 4px solid #3498db;
         }
         .button {
             display: inline-block;
@@ -50,29 +42,76 @@
             cursor: pointer;
         }
         .copy-button {
-            background-color: #9b59b6;
+            background-color: #2ecc71;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
             cursor: pointer;
+            font-size: 0.8em;
+            margin-left: 10px;
         }
-        .loading {
-            text-align: center;
-            padding: 20px;
-            font-style: italic;
-            color: #777;
+        .prompt-text {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            margin-top: 10px;
         }
-        .error {
+        .navigation {
+            margin-bottom: 20px;
+        }
+        .error-message {
             color: #e74c3c;
+            font-weight: bold;
             padding: 10px;
             background-color: #fadbd8;
             border-radius: 5px;
-            margin-bottom: 15px;
-        }
-        .navigation {
-            display: flex;
-            justify-content: space-between;
             margin-bottom: 20px;
         }
-        .copied {
-            background-color: #2ecc71;
+        
+        /* Styles pour les contrôles de session */
+        .session-controls {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .session-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .session-button {
+            background-color: #2980b9;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-right: 10px;
+            cursor: pointer;
+            border: none;
+        }
+        .session-select {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            background-color: white;
+            min-width: 200px;
+        }
+        .session-info {
+            margin-top: 10px;
+            font-style: italic;
+            color: #555;
+        }
+        #new-session-btn {
+            background-color: #27ae60;
         }
     </style>
 </head>
@@ -80,397 +119,343 @@
     <div class="container">
         <h1>BD Creator - Prompts</h1>
         
-        <div class="navigation">
-            <p>
-                <a href="index.html" class="button">Accueil</a>
-                <a href="scenario.html" class="button">Scénario</a>
-                <a href="storyboard.html" class="button">Storyboard</a>
-            </p>
-        </div>
-        
-        <div id="prompts-container">
-            <h2 id="chapter-title">Prompts pour le chapitre : <span id="chapter-name">Chargement...</span></h2>
-            <p>Voici les prompts générés pour Midjourney pour chaque case du storyboard. Vous pouvez les copier et les utiliser directement dans Midjourney pour créer les images de votre BD.</p>
-            
-            <div id="prompts-content" class="loading">
-                Chargement des prompts...
+        <!-- Contrôles de session -->
+        <div class="session-controls">
+            <div class="session-buttons">
+                <button id="save-session-btn" class="session-button">Sauvegarder la session</button>
+                <button id="new-session-btn" class="session-button">Nouvelle session</button>
+                <select id="load-session-select" class="session-select">
+                    <option value="">Charger une session...</option>
+                </select>
+            </div>
+            <div id="session-info" class="session-info">
+                Session actuelle: <span id="current-session-name">Nouvelle session</span>
             </div>
         </div>
+        
+        <div class="navigation">
+            <a href="index.html" class="button">Accueil</a>
+            <a href="scenario.html" class="button">Scénario</a>
+            <a href="storyboard.html" id="back-to-storyboard" class="button">Retour au storyboard</a>
+        </div>
+        
+        <div id="chapter-info">
+            <h2 id="chapter-title">Chargement des prompts...</h2>
+        </div>
+        
+        <div id="prompts-content">
+            <!-- Le contenu des prompts sera généré dynamiquement ici -->
+        </div>
+        
+        <p>
+            <a href="storyboard.html" id="back-to-storyboard-bottom" class="button">Retour au storyboard</a>
+        </p>
     </div>
 
     <!-- Inclure le gestionnaire de sessions -->
     <script src="js/bd_creator_session_manager.js"></script>
-
+    
     <script>
-        // Fonction pour récupérer les paramètres de l'URL
+        // Fonction pour récupérer les paramètres d'URL
         function getUrlParameter(name) {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(name);
+            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+            var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+            var results = regex.exec(location.search);
+            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
         }
-
+        
         // Fonction pour copier le texte dans le presse-papiers
         function copyToClipboard(text, buttonElement) {
             navigator.clipboard.writeText(text).then(function() {
-                // Changer le texte du bouton temporairement
+                // Changer temporairement le texte du bouton pour indiquer que la copie a réussi
                 const originalText = buttonElement.textContent;
-                buttonElement.textContent = "Copié !";
-                buttonElement.classList.add("copied");
-                
-                // Rétablir le texte original après 2 secondes
+                buttonElement.textContent = 'Copié !';
                 setTimeout(function() {
                     buttonElement.textContent = originalText;
-                    buttonElement.classList.remove("copied");
                 }, 2000);
             }, function(err) {
-                console.error('Erreur lors de la copie: ', err);
-                alert("Erreur lors de la copie. Veuillez sélectionner et copier manuellement.");
+                console.error('Erreur lors de la copie :', err);
+                alert('Erreur lors de la copie du texte. Veuillez réessayer.');
             });
         }
-
-        // Fonction pour obtenir des détails sur les personnages en fonction du chapitre
-        function getCharacterDetails(chapterId, description) {
-            let characterDetails = "";
-            
-            // Expressions faciales
-            const expressions = [
-                "expression curieuse", "regard déterminé", "visage inquiet", 
-                "expression surprise", "regard intense", "visage pensif",
-                "expression de peur", "regard confiant", "visage émerveillé"
-            ];
-            
-            // Positions et postures
-            const postures = [
-                "debout, légèrement penché en avant", "assis, le dos droit", 
-                "accroupi, prêt à bondir", "en position défensive", 
-                "bras croisés", "mains tendues vers l'avant",
-                "en train de courir", "figé sur place", "en train de grimper"
-            ];
-            
-            // Vêtements et accessoires selon le chapitre
-            let clothing = "";
-            switch(parseInt(chapterId)) {
-                case 1:
-                    clothing = "vêtements simples et pratiques, sac à dos usé";
-                    break;
-                case 2:
-                    clothing = "tenue de voyage poussiéreuse, cape légère";
-                    break;
-                case 3:
-                    clothing = "vêtements partiellement brûlés, armure légère";
-                    break;
-                case 4:
-                    clothing = "tenue ornée de symboles mystiques, amulette brillante";
-                    break;
-                case 5:
-                    clothing = "armure complète avec symboles héroïques, cape majestueuse";
-                    break;
-                default:
-                    clothing = "tenue d'aventurier";
-            }
-            
-            // Sélectionner aléatoirement une expression et une posture
-            const expression = expressions[Math.floor(Math.random() * expressions.length)];
-            const posture = postures[Math.floor(Math.random() * postures.length)];
-            
-            // Personnages spécifiques basés sur la description
-            if (description.includes("héros")) {
-                characterDetails = `protagoniste avec ${expression}, ${posture}, ${clothing}`;
-            } else if (description.includes("silhouette") || description.includes("mystérieuse")) {
-                characterDetails = `figure mystérieuse dans l'ombre, visage partiellement caché, posture énigmatique`;
-            } else if (description.includes("alliés") || description.includes("groupe")) {
-                characterDetails = `groupe de personnages divers, expressions variées, postures dynamiques`;
-            } else if (description.includes("ennemi") || description.includes("antagoniste")) {
-                characterDetails = `antagoniste menaçant, expression sinistre, posture dominante, vêtements sombres`;
-            } else if (description.includes("sage") || description.includes("femme mystérieuse")) {
-                characterDetails = `personnage âgé et sage, expression sereine, posture droite, vêtements élaborés`;
-            } else {
-                characterDetails = `personnage avec ${expression}, ${posture}, ${clothing}`;
-            }
-            
-            return characterDetails;
-        }
         
-        // Fonction pour obtenir des détails sur les lieux en fonction du chapitre et de la description
-        function getLocationDetails(chapterId, description) {
-            let locationDetails = "";
+        // Fonction pour extraire les mots-clés d'une description
+        function extractKeywords(description) {
+            // Liste de mots-clés potentiels à rechercher dans la description
+            const keywordMappings = {
+                'artefact': 'ancient artifact, magical item, glowing relic',
+                'portail': 'mystical portal, dimensional gateway, swirling vortex',
+                'lumière': 'bright light, glowing aura, radiant beam',
+                'ombre': 'dark shadows, looming darkness, mysterious silhouette',
+                'combat': 'intense battle, fierce combat, dramatic fight',
+                'montagne': 'towering mountains, rocky peaks, treacherous cliffs',
+                'temple': 'ancient temple, sacred shrine, forgotten sanctuary',
+                'feu': 'raging fire, dancing flames, burning embers',
+                'neige': 'heavy snowfall, blizzard, snow-covered landscape',
+                'grotte': 'dark cave, mysterious cavern, hidden grotto',
+                'bibliothèque': 'ancient library, towering bookshelves, dusty tomes',
+                'forteresse': 'imposing fortress, dark citadel, towering castle',
+                'forêt': 'dense forest, mysterious woods, ancient trees',
+                'cité': 'bustling city, ancient metropolis, sprawling urban landscape',
+                'marché': 'busy marketplace, colorful bazaar, crowded market stalls',
+                'taverne': 'lively tavern, dimly lit inn, medieval pub',
+                'guerrier': 'brave warrior, armored fighter, battle-scarred hero',
+                'voleuse': 'agile thief, nimble rogue, stealthy burglar',
+                'sage': 'wise sage, ancient scholar, bearded mentor',
+                'prophétie': 'ancient prophecy, mystical prediction, foretold destiny',
+                'vision': 'prophetic vision, mystical sight, dreamlike sequence',
+                'trahison': 'shocking betrayal, unexpected treachery, dramatic revelation',
+                'évasion': 'daring escape, desperate flight, narrow getaway',
+                'sacrifice': 'heroic sacrifice, ultimate offering, selfless act'
+            };
             
-            // Déterminer si c'est intérieur ou extérieur
-            let isInterior = description.includes("bibliothèque") || 
-                            description.includes("temple") || 
-                            description.includes("intérieur");
-            
-            // Lieux spécifiques basés sur la description
-            if (description.includes("portail")) {
-                locationDetails = "site ancien avec portail mystique, pierres gravées de symboles, brume légère au sol";
-            } else if (description.includes("artefact")) {
-                locationDetails = isInterior ? 
-                    "chambre ancienne faiblement éclairée, murs couverts de symboles, poussière dans l'air" : 
-                    "clairière isolée, cercle de pierres, lumière filtrant à travers les arbres";
-            } else if (description.includes("flammes") || description.includes("feu")) {
-                locationDetails = "passage étroit bordé de flammes, sol craquelé, fumée dans l'air";
-            } else if (description.includes("pont")) {
-                locationDetails = "pont suspendu fragile au-dessus d'un gouffre profond, brume en contrebas, vents violents";
-            } else if (description.includes("bibliothèque")) {
-                locationDetails = "vaste bibliothèque ancienne, étagères jusqu'au plafond, manuscrits poussiéreux, faisceau de lumière traversant les vitraux";
-            } else if (description.includes("temple")) {
-                locationDetails = "temple majestueux aux colonnes imposantes, autel central, symboles gravés au sol, lumière mystique";
-            } else if (description.includes("feu de camp")) {
-                locationDetails = "campement nocturne, feu de camp crépitant, forêt dense en arrière-plan, ciel étoilé";
-            } else if (description.includes("bataille")) {
-                locationDetails = "champ de bataille chaotique, structures partiellement détruites, ciel tourmenté, fumée à l'horizon";
-            } else {
-                // Lieux génériques selon le chapitre
-                switch(parseInt(chapterId)) {
-                    case 1:
-                        locationDetails = isInterior ? 
-                            "intérieur d'une grotte mystérieuse, stalactites, lueurs étranges" : 
-                            "forêt dense et mystérieuse, rayons de soleil filtrant à travers les arbres";
-                        break;
-                    case 2:
-                        locationDetails = isInterior ? 
-                            "taverne animée, tables en bois, chandelles vacillantes" : 
-                            "sentier sinueux à travers des paysages fantastiques, formations rocheuses étranges";
-                        break;
-                    case 3:
-                        locationDetails = isInterior ? 
-                            "salle d'épreuve avec mécanismes anciens, torches aux murs" : 
-                            "terrain accidenté et hostile, ciel menaçant, végétation rare";
-                        break;
-                    case 4:
-                        locationDetails = isInterior ? 
-                            "chambre des secrets, murs couverts d'inscriptions anciennes, artefacts lumineux" : 
-                            "site sacré en ruines, colonnes brisées, végétation envahissante";
-                        break;
-                    case 5:
-                        locationDetails = isInterior ? 
-                            "salle du trône imposante, architecture grandiose, vitraux colorés" : 
-                            "plaine de la bataille finale, ciel dramatique, éléments en lévitation";
-                        break;
-                    default:
-                        locationDetails = isInterior ? 
-                            "intérieur mystérieux, architecture fantastique" : 
-                            "paysage fantastique, ciel impressionnant";
+            // Rechercher les mots-clés dans la description
+            let keywords = [];
+            for (const [key, value] of Object.entries(keywordMappings)) {
+                if (description.toLowerCase().includes(key.toLowerCase())) {
+                    keywords.push(value);
                 }
             }
             
-            return locationDetails;
-        }
-
-        // Fonction pour convertir une description en prompt Midjourney
-        function descriptionToPrompt(description, chapterId, pageNum, caseNum) {
-            // Obtenir des détails sur les personnages et les lieux
-            const characterDetails = getCharacterDetails(chapterId, description);
-            const locationDetails = getLocationDetails(chapterId, description);
-            
-            // Déterminer le style en fonction du chapitre
-            let style, mood, lighting;
-            
-            switch(parseInt(chapterId)) {
-                case 1: // Le Début du Voyage
-                    style = "style de bande dessinée européenne, ligne claire, couleurs vives";
-                    mood = "atmosphère de découverte et de mystère";
-                    lighting = "lumière douce, lueurs mystérieuses, ombres légères";
-                    break;
-                case 2: // Rencontres Inattendues
-                    style = "style manga détaillé, encre noire, hachures précises";
-                    mood = "tension palpable, méfiance et curiosité";
-                    lighting = "contrastes marqués, ombres dramatiques, éclairage directionnel";
-                    break;
-                case 3: // L'Épreuve du Feu
-                    style = "style dramatique, traits dynamiques, couleurs chaudes dominantes";
-                    mood = "courage face à l'adversité, détermination intense";
-                    lighting = "éclairage dramatique, tons orangés et rouges, ombres profondes";
-                    break;
-                case 4: // Révélations
-                    style = "style mystique, traits fluides, couleurs éthérées";
-                    mood = "révélation profonde, compréhension soudaine";
-                    lighting = "lumière éthérée, rayons lumineux traversant l'obscurité, reflets subtils";
-                    break;
-                case 5: // Le Dénouement
-                    style = "style épique, composition grandiose, palette riche";
-                    mood = "résolution finale, triomphe et transformation";
-                    lighting = "lumière éclatante, aube d'un nouveau jour, éclats dorés";
-                    break;
-                default:
-                    style = "style bande dessinée détaillé";
-                    mood = "aventure, fantasy";
-                    lighting = "éclairage équilibré";
+            // Si aucun mot-clé spécifique n'est trouvé, ajouter des mots-clés génériques
+            if (keywords.length === 0) {
+                keywords.push('dramatic scene, detailed illustration, fantasy artwork');
             }
             
-            // Extraire l'essence de la description
-            const descriptionEssence = description
-                .replace("Notre héros", "Le protagoniste")
-                .replace("notre héros", "le protagoniste");
+            return keywords.join(', ');
+        }
+        
+        // Fonction pour convertir une description en prompt Midjourney
+        function descriptionToPrompt(description, chapterId, panelIndex) {
+            // Extraire les mots-clés de la description
+            const keywords = extractKeywords(description);
             
-            // Construire le prompt en utilisant tous les éléments
-            let prompt = `${descriptionEssence}, ${characterDetails}, ${locationDetails}, ${mood}, ${style}, ${lighting}, composition dynamique, case de bande dessinée, détails précis --ar 2:3`;
+            // Définir le style et l'ambiance en fonction du chapitre
+            let style, mood, lighting;
+            
+            switch (parseInt(chapterId)) {
+                case 1:
+                    style = "fantasy illustration, detailed artwork, vibrant colors";
+                    mood = "mysterious, intriguing, wonder";
+                    lighting = "soft ambient light, magical glow";
+                    break;
+                case 2:
+                    style = "action scene, dynamic composition, detailed character design";
+                    mood = "tense, exciting, adventurous";
+                    lighting = "dramatic lighting, high contrast";
+                    break;
+                case 3:
+                    style = "epic fantasy, dramatic scene, intense atmosphere";
+                    mood = "dangerous, challenging, determined";
+                    lighting = "fire light, warm colors, dramatic shadows";
+                    break;
+                case 4:
+                    style = "dark fantasy, intricate details, emotional scene";
+                    mood = "revealing, shocking, dramatic";
+                    lighting = "moody lighting, dark atmosphere with highlights";
+                    break;
+                case 5:
+                    style = "climactic scene, epic fantasy, detailed illustration";
+                    mood = "final confrontation, emotional, resolute";
+                    lighting = "dramatic backlighting, epic sky, intense colors";
+                    break;
+                default:
+                    style = "fantasy illustration, detailed artwork";
+                    mood = "adventurous, mysterious";
+                    lighting = "balanced lighting";
+            }
+            
+            // Créer des descriptions détaillées des personnages en fonction du chapitre
+            let characters = "";
+            if (description.includes("héros") || description.includes("protagoniste")) {
+                if (chapterId == 1) {
+                    characters = "young adventurer with curious expression, casual clothing, determined eyes";
+                } else if (chapterId == 2) {
+                    characters = "protagonist in travel clothes, newfound confidence, holding the artifact";
+                } else if (chapterId == 3) {
+                    characters = "hero with weathered appearance, determined expression, mountain gear";
+                } else if (chapterId == 4) {
+                    characters = "protagonist with serious expression, battle-worn appearance, resolute stance";
+                } else if (chapterId == 5) {
+                    characters = "hero in dramatic pose, torn clothing, glowing eyes, holding artifact";
+                }
+            }
+            
+            if (description.includes("voleuse")) {
+                characters += ", agile female thief with hooded cloak, nimble posture, cunning smile";
+            }
+            
+            if (description.includes("guerrier")) {
+                characters += ", muscular warrior with distinctive scar, heavy armor, imposing weapon";
+            }
+            
+            if (description.includes("sage")) {
+                characters += ", elderly scholar with long beard, ornate robes, wise eyes";
+            }
+            
+            if (description.includes("antagoniste") || description.includes("ennemi")) {
+                characters += ", menacing villain with dark armor, sinister expression, powerful stance";
+            }
+            
+            // Créer des descriptions détaillées des lieux en fonction du chapitre et de la description
+            let location = "";
+            if (description.includes("grotte") || description.includes("temple")) {
+                location = "ancient stone temple interior, carved pillars, mystical symbols, flickering torches";
+            } else if (description.includes("montagne")) {
+                location = "treacherous mountain path, snow-capped peaks, dizzying heights, rocky terrain";
+            } else if (description.includes("forteresse") || description.includes("citadelle")) {
+                location = "imposing dark fortress, gothic architecture, intimidating towers, iron gates";
+            } else if (description.includes("bibliothèque")) {
+                location = "vast ancient library, towering bookshelves, dust motes in light beams, scrolls and tomes";
+            } else if (description.includes("taverne")) {
+                location = "medieval tavern interior, wooden beams, fireplace, diverse patrons, mugs of ale";
+            } else if (description.includes("marché")) {
+                location = "bustling fantasy marketplace, colorful stalls, exotic goods, diverse crowd";
+            } else if (description.includes("forêt")) {
+                location = "mysterious forest, ancient trees, dappled light, misty atmosphere";
+            } else if (description.includes("cité")) {
+                location = "fantasy city skyline, diverse architecture, busy streets, towering structures";
+            } else if (chapterId == 1) {
+                location = "ordinary home interior with extraordinary portal, familiar surroundings becoming magical";
+            }
+            
+            // Assembler le prompt final
+            let prompt = `${description}, ${characters}, ${location}, ${style}, ${mood}, ${lighting}, ${keywords}, comic book panel, professional illustration --ar 2:3`;
             
             return prompt;
         }
-
-        // Fonction pour générer des prompts Midjourney pour un chapitre
+        
+        // Fonction pour générer les prompts pour un chapitre spécifique
         function generatePrompts(chapterId, chapterTitle) {
+            // Mettre à jour le titre du chapitre
+            document.getElementById('chapter-title').textContent = 'Prompts pour Chapitre ' + chapterId + ': ' + chapterTitle;
+            
+            // Mettre à jour les liens vers la page storyboard
+            const storyboardLinks = document.querySelectorAll('a[href^="storyboard.html"]');
+            storyboardLinks.forEach(link => {
+                link.href = `storyboard.html?chapter=${chapterId}&title=${encodeURIComponent(chapterTitle)}`;
+            });
+            
+            // Récupérer les données du storyboard depuis le localStorage
+            const storyboardData = JSON.parse(localStorage.getItem('bdStoryboard')) || {};
+            
+            // Générer le contenu des prompts
             const promptsContent = document.getElementById('prompts-content');
-            let html = '';
+            promptsContent.innerHTML = '';
             
-            // Déterminer le nombre de pages en fonction du chapitre
-            let pageCount;
-            switch(chapterId) {
-                case '1': pageCount = 10; break;
-                case '2': pageCount = 12; break;
-                case '3': pageCount = 8; break;
-                case '4': pageCount = 10; break;
-                case '5': pageCount = 8; break;
-                default: pageCount = 10;
-            }
-            
-            // Descriptions détaillées pour chaque chapitre
-            const chapterDescriptions = {
-                1: { // Le Début du Voyage
-                    title: "Le Début du Voyage",
-                    setting: "Un village paisible en bordure d'une forêt mystérieuse",
-                    mainCharacter: "Un jeune aventurier curieux et déterminé",
-                    descriptions: [
-                        "Le protagoniste découvre un mystérieux artefact enfoui près d'un vieil arbre creux, son visage illuminé par une lueur étrange, dans une clairière isolée au crépuscule.",
-                        "L'artefact ancien commence à briller d'une lumière bleutée intense, des symboles gravés s'illuminant un à un, entre les mains tremblantes du protagoniste agenouillé sur le sol forestier.",
-                        "Un portail circulaire s'ouvre lentement devant le protagoniste, révélant un paysage alien aux couleurs impossibles, dans la grotte découverte sous les racines de l'arbre ancestral.",
-                        "Le protagoniste hésite au seuil du portail, une main tendue vers la lumière émanant de l'ouverture, son ombre s'étirant derrière lui sur le sol rocailleux de la caverne.",
-                        "Une silhouette élancée et mystérieuse se dessine de l'autre côté du portail, tendant une main gantée vers le protagoniste, dans un environnement baigné de brume iridescente.",
-                        "Le protagoniste prend une profonde inspiration, serrant l'artefact contre sa poitrine, avant de faire un pas décisif à travers le portail scintillant.",
-                        "Le monde autour du protagoniste se transforme complètement, la réalité se déformant en spirales de couleurs, alors qu'il traverse le seuil entre les dimensions.",
-                        "Le protagoniste émerge dans un paysage fantastique aux formations rocheuses flottantes, sous un ciel aux multiples lunes, ses vêtements ondulant dans un vent éthéré."
-                    ]
-                },
-                2: { // Rencontres Inattendues
-                    title: "Rencontres Inattendues",
-                    setting: "Un monde étrange aux paysages impossibles",
-                    mainCharacter: "Notre héros, désormais perdu dans un univers inconnu",
-                    descriptions: [
-                        "Le protagoniste rencontre un personnage excentrique aux vêtements multicolores et au chapeau extravagant, gesticulant avec enthousiasme près d'une cascade qui coule vers le haut.",
-                        "Un groupe de créatures humanoïdes à la peau écailleuse apparaît au sommet d'une colline, brandissant des lances lumineuses, leurs yeux reflétant la lumière des trois lunes.",
-                        "Une femme aux cheveux argentés et aux yeux luminescents offre une fiole cristalline au protagoniste, son expression bienveillante contrastant avec les ruines inquiétantes qui les entourent.",
-                        "Le protagoniste et ses nouveaux alliés sont assis en cercle autour d'un feu de camp aux flammes bleues, échangeant des histoires sous un ciel nocturne traversé d'aurores boréales.",
-                        "Un ennemi masqué au long manteau observe le groupe depuis les ombres d'une arche de pierre ancienne, sa silhouette à peine visible dans la brume du soir.",
-                        "Le protagoniste, paumes ouvertes vers le ciel, apprend à canaliser une énergie lumineuse qui s'échappe de ses doigts en filaments dorés, sous le regard attentif de son mentor.",
-                        "Le groupe traverse un pont de cristal suspendu au-dessus d'un océan de nuages, des îles flottantes visibles au loin, et des créatures ailées évoluant gracieusement autour d'eux.",
-                        "Le protagoniste découvre une cité ancienne aux tours impossiblement hautes et fines, construite à flanc de montagne, avec des escaliers en spirale et des jardins suspendus."
-                    ]
-                },
-                3: { // L'Épreuve du Feu
-                    title: "L'Épreuve du Feu",
-                    setting: "Un territoire hostile dominé par des éléments déchaînés",
-                    mainCharacter: "Notre héros, plus confiant mais confronté à de grands dangers",
-                    descriptions: [
-                        "Le protagoniste fait face à un mur de flammes rugissantes qui bloque l'étroit passage rocheux, sa silhouette se découpant contre l'intense lumière orangée, la chaleur déformant l'air autour de lui.",
-                        "Le groupe est encerclé par des ennemis aux armures noires et aux yeux rougeoyants, dos à dos en position défensive, dans une arène naturelle formée par des colonnes de basalte.",
-                        "Le protagoniste avance prudemment sur un pont suspendu délabré, les planches craquant sous ses pas, un gouffre sans fond visible en contrebas, s'accrochant aux cordes effilochées.",
-                        "Un duel s'engage entre le protagoniste et l'antagoniste masqué, leurs silhouettes projetant des ombres dansantes sur les parois rocheuses, leurs armes s'entrechoquant dans une gerbe d'étincelles.",
-                        "Le protagoniste, yeux fermés et bras écartés, libère son pouvoir à pleine puissance, une aura lumineuse émanant de tout son corps, soulevant poussière et débris autour de lui.",
-                        "Un allié s'effondre lentement, touché en pleine poitrine, le protagoniste se précipitant pour le rattraper, dans un décor de bataille chaotique et enfumé.",
-                        "Le protagoniste, à genoux devant un autel ancien, reçoit une vision qui révèle son véritable héritage, des images de son passé se reflétant dans un bassin d'eau miroitante.",
-                        "Le groupe émerge victorieux mais épuisé d'une caverne en flammes, leurs silhouettes se détachant contre l'entrée embrasée, soutenant leurs camarades blessés."
-                    ]
-                },
-                4: { // Révélations
-                    title: "Révélations",
-                    setting: "Des lieux anciens regorgeant de connaissances oubliées",
-                    mainCharacter: "Notre héros, en quête de vérité et de compréhension",
-                    descriptions: [
-                        "Le protagoniste découvre une bibliothèque colossale aux étagères vertigineuses, des livres flottant doucement entre les rayons, la lumière filtrant à travers d'immenses vitraux poussiéreux.",
-                        "Un sage à la longue barbe blanche et aux yeux laiteux révèle l'origine de l'artefact, dessinant des symboles lumineux dans l'air, assis en tailleur sur un tapis circulaire orné de constellations.",
-                        "Le protagoniste, figé dans une transe profonde, a une vision du passé où des civilisations anciennes créent l'artefact, les images se reflétant dans ses yeux dilatés.",
-                        "L'antagoniste, capuche rabattue révélant enfin son visage marqué de cicatrices rituelles, explique ses motivations au protagoniste captif, dans une salle aux murs couverts de prophéties gravées.",
-                        "Le protagoniste comprend enfin son rôle dans la prophétie, se tenant devant une fresque murale gigantesque qui dépeint exactement la scène présente, dans un temple circulaire baigné de lumière.",
-                        "Le groupe découvre un temple caché derrière une cascade perpétuelle, des statues colossales gardant l'entrée, des cristaux lumineux incrustés dans les murs de marbre veiné.",
-                        "Le protagoniste retrouve une personne de son passé qu'il croyait perdue à jamais, leurs silhouettes se reflétant dans un bassin d'eau parfaitement immobile, entouré de colonnes torsadées.",
-                        "Une carte stellaire s'anime sous les doigts du protagoniste, révélant l'emplacement de la clé finale, dans une chambre souterraine aux murs couverts de métal étrangement iridescent."
-                    ]
-                },
-                5: { // Le Dénouement
-                    title: "Le Dénouement",
-                    setting: "Le lieu de la confrontation finale et de la résolution",
-                    mainCharacter: "Notre héros, prêt à accomplir son destin",
-                    descriptions: [
-                        "Le protagoniste se prépare pour l'affrontement final, revêtant une armure cérémonielle aux reflets dorés, entouré de ses alliés dans une salle circulaire aux piliers de cristal.",
-                        "Une bataille épique s'engage sur une plaine désolée, les forces du bien et du mal s'affrontant sous un ciel déchiré par des éclairs, des structures anciennes s'élevant en arrière-plan.",
-                        "Le protagoniste, au centre d'un cercle rituel, utilise l'artefact pour refermer la brèche dimensionnelle, des rayons de lumière pure jaillissant de ses mains vers le ciel tourmenté.",
-                        "L'antagoniste, désespéré, tente une dernière manœuvre en invoquant une énergie interdite, son corps se transformant sous l'effet du pouvoir corrompu, dans un temple qui commence à s'effondrer.",
-                        "Le protagoniste, face à un choix impossible symbolisé par deux portes opposées, la main suspendue entre les deux, dans une chambre située hors du temps et de l'espace.",
-                        "Le monde commence à se reconstruire après le chaos, des plantes poussant à vue d'œil sur les ruines, des rayons de soleil perçant enfin les nuages sombres qui obscurcissaient le ciel.",
-                        "Le protagoniste contemple son avenir du haut d'une falaise surplombant le nouveau monde, l'artefact désormais inerte dans sa main, le vent faisant onduler sa cape déchirée par les combats.",
-                        "Une cérémonie de célébration réunit tous les alliés survivants, dans la cité reconstruite aux bannières colorées, le protagoniste recevant les honneurs sous une arche de fleurs lumineuses."
-                    ]
-                }
-            };
-            
-            // Générer des prompts pour chaque page et chaque case
-            for (let i = 1; i <= pageCount; i++) {
-                html += `<h3>Page ${i}</h3>`;
+            if (storyboardData.content) {
+                // Créer un élément temporaire pour parser le HTML du storyboard
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = storyboardData.content;
                 
-                // Nombre de cases par page (entre 3 et 7)
-                const caseCount = Math.floor(Math.random() * 5) + 3;
+                // Trouver toutes les pages et cases
+                const pages = tempDiv.querySelectorAll('.panel > h3');
                 
-                for (let j = 1; j <= caseCount; j++) {
-                    // Obtenir une description détaillée pour cette case
-                    let description;
+                let panelIndex = 0;
+                
+                // Pour chaque page
+                pages.forEach(pageTitle => {
+                    const pageDiv = document.createElement('div');
+                    pageDiv.className = 'prompt-box';
                     
-                    if (chapterDescriptions[chapterId]) {
-                        // Utiliser les descriptions prédéfinies si disponibles
-                        const descriptions = chapterDescriptions[chapterId].descriptions;
-                        description = descriptions[Math.floor(Math.random() * descriptions.length)];
-                    } else {
-                        // Fallback si le chapitre n'est pas défini
-                        description = `Description détaillée de la case ${j} (chapitre ${chapterId}, page ${i})`;
-                    }
+                    const pageTitleElement = document.createElement('h3');
+                    pageTitleElement.textContent = pageTitle.textContent;
+                    pageDiv.appendChild(pageTitleElement);
                     
-                    // Générer un prompt basé sur la description
-                    const promptText = descriptionToPrompt(description, chapterId, i, j);
+                    // Trouver la div parent de cette page
+                    const pageElement = pageTitle.parentElement;
                     
-                    // Échapper les apostrophes pour éviter les problèmes avec l'attribut onclick
-                    const escapedPrompt = promptText.replace(/'/g, "\\'");
+                    // Trouver toutes les cases dans cette page
+                    const panels = pageElement.querySelectorAll('h4');
                     
-                    html += `
-                    <div class="prompt-card">
-                        <h4>Case ${j} - Page ${i}</h4>
-                        <p><strong>Description :</strong> ${description}</p>
-                        <div class="prompt-text">${promptText}</div>
-                        <button class="button copy-button" onclick="copyToClipboard('${escapedPrompt}', this)">Copier le prompt</button>
-                    </div>`;
-                }
+                    // Pour chaque case
+                    panels.forEach(panelTitle => {
+                        panelIndex++;
+                        
+                        const panelDiv = document.createElement('div');
+                        panelDiv.className = 'prompt-box';
+                        
+                        const panelTitleElement = document.createElement('h4');
+                        panelTitleElement.textContent = panelTitle.textContent;
+                        panelDiv.appendChild(panelTitleElement);
+                        
+                        // Trouver la div parent de cette case
+                        const panelElement = panelTitle.parentElement;
+                        
+                        // Trouver la description de cette case
+                        const descriptionElement = panelElement.querySelector('p');
+                        let description = '';
+                        
+                        if (descriptionElement) {
+                            description = descriptionElement.textContent;
+                            
+                            const descriptionP = document.createElement('p');
+                            descriptionP.textContent = description;
+                            panelDiv.appendChild(descriptionP);
+                        }
+                        
+                        // Générer un prompt pour cette case
+                        const prompt = descriptionToPrompt(description, chapterId, panelIndex);
+                        
+                        // Créer un conteneur pour le prompt et le bouton de copie
+                        const promptContainer = document.createElement('div');
+                        promptContainer.style.display = 'flex';
+                        promptContainer.style.alignItems = 'center';
+                        
+                        const promptLabel = document.createElement('strong');
+                        promptLabel.textContent = 'Prompt Midjourney:';
+                        promptContainer.appendChild(promptLabel);
+                        
+                        const copyButton = document.createElement('button');
+                        copyButton.textContent = 'Copier';
+                        copyButton.className = 'copy-button';
+                        copyButton.onclick = function() {
+                            copyToClipboard(prompt, this);
+                        };
+                        promptContainer.appendChild(copyButton);
+                        
+                        panelDiv.appendChild(promptContainer);
+                        
+                        const promptTextDiv = document.createElement('div');
+                        promptTextDiv.className = 'prompt-text';
+                        promptTextDiv.textContent = prompt;
+                        panelDiv.appendChild(promptTextDiv);
+                        
+                        pageDiv.appendChild(panelDiv);
+                    });
+                    
+                    promptsContent.appendChild(pageDiv);
+                });
+            } else {
+                // Afficher un message si aucun storyboard n'est trouvé
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.textContent = 'Aucun storyboard trouvé pour ce chapitre. Veuillez d\'abord créer un storyboard.';
+                promptsContent.appendChild(errorDiv);
             }
-            
-            promptsContent.innerHTML = html;
-            promptsContent.classList.remove('loading');
         }
-
-        // Fonction principale qui s'exécute au chargement de la page
+        
+        // Initialisation de la page
         document.addEventListener('DOMContentLoaded', function() {
-            // Récupérer les paramètres de l'URL
+            // Récupérer les paramètres d'URL
             const chapterId = getUrlParameter('chapter');
             const chapterTitle = getUrlParameter('title');
             
-            // Mettre à jour le titre avec le numéro et le nom du chapitre
-            const chapterNameElement = document.getElementById('chapter-name');
-            
             if (chapterId && chapterTitle) {
-                chapterNameElement.textContent = `${chapterId}. ${chapterTitle}`;
-                
                 // Générer les prompts pour ce chapitre
                 generatePrompts(chapterId, chapterTitle);
             } else {
                 // Afficher un message d'erreur si aucun chapitre n'est spécifié
-                const promptsContent = document.getElementById('prompts-content');
-                promptsContent.innerHTML = `
-                    <div class="error">
-                        <p>Erreur : Aucun chapitre spécifié.</p>
-                        <p>Veuillez d'abord sélectionner un chapitre depuis la page storyboard.</p>
-                    </div>
-                    <p><a href="scenario.html" class="button">Retour au scénario</a></p>
-                `;
-                promptsContent.classList.remove('loading');
-                chapterNameElement.textContent = "Non spécifié";
+                document.getElementById('chapter-title').textContent = 'Erreur';
+                
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.textContent = 'Aucun chapitre spécifié. Veuillez sélectionner un chapitre depuis la page storyboard.';
+                
+                document.getElementById('prompts-content').appendChild(errorDiv);
             }
         });
     </script>
 </body>
 </html>
+
