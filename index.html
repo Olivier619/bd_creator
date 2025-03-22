@@ -4,75 +4,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BD Creator</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1) ;
-        }
-        h1 {
-            color: #333;
-            text-align: center;
-        }
-        .feature {
-            margin-bottom: 20px;
-            padding: 15px;
-            background-color: #f9f9f9;
-            border-radius: 5px;
-        }
-        .feature h3 {
-            margin-top: 0;
-            color: #2c3e50;
-        }
-        .cta {
-            text-align: center;
-            margin-top: 30px;
-        }
-        .button {
-            display: inline-block;
-            background-color: #3498db;
-            color: white;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
-        }
-    </style>
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <div class="container">
+    <header>
         <h1>BD Creator</h1>
-        <p>Bienvenue sur BD Creator, l'application web qui vous permet de créer des bandes dessinées du début à la fin.</p>
-        
-        <div class="feature">
-            <h3>Génération de scénarios</h3>
-            <p>Entrez quelques mots ou phrases, et notre système génère automatiquement un scénario complet pour une BD de 48 pages.</p>
+    </header>
+    
+    <nav>
+        <a href="index.html" class="active">Accueil</a>
+        <a href="scenario.html">Scénario</a>
+        <a href="storyboard.html">Storyboard</a>
+        <a href="prompts.html">Prompts</a>
+    </nav>
+    
+    <div class="container">
+        <div class="card">
+            <h2>Créez votre BD du début à la fin</h2>
+            <p>Bienvenue sur BD Creator, l'application qui vous permet de créer une bande dessinée complète en quelques étapes simples.</p>
+            
+            <ol>
+                <li>Entrez quelques mots ou phrases qui inspireront votre BD</li>
+                <li>Nous générerons un scénario complet pour une BD de 48 pages</li>
+                <li>Vous pourrez visualiser et approuver le storyboard pour chaque chapitre</li>
+                <li>Nous créerons des prompts optimisés pour Midjourney pour chaque case</li>
+            </ol>
+            
+            <form id="keywords-form" class="form-group">
+                <label for="keywords-input">Entrez des mots-clés pour votre BD :</label>
+                <input type="text" id="keywords-input" placeholder="Ex: aventure spatiale, robots, amitié" required>
+                <button type="submit">Générer un scénario</button>
+            </form>
         </div>
         
-        <div class="feature">
-            <h3>Création de storyboards</h3>
-            <p>Visualisez et modifiez le storyboard de chaque chapitre, avec 3 à 7 cases par page.</p>
-        </div>
-        
-        <div class="feature">
-            <h3>Prompts pour Midjourney</h3>
-            <p>Générez des prompts optimisés pour Midjourney afin de créer les images de votre BD.</p>
-        </div>
-        
-        <div class="cta">
-            <p>Cette application est en cours de développement. Revenez bientôt pour découvrir toutes les fonctionnalités !</p>
-            <a href="#" class="button">Commencer</a>
+        <div class="card">
+            <h3>Fonctionnalités</h3>
+            
+            <div class="feature">
+                <h4>Génération de scénarios</h4>
+                <p>Notre système analyse vos mots-clés et génère un scénario complet divisé en chapitres, avec une structure narrative cohérente.</p>
+            </div>
+            
+            <div class="feature">
+                <h4>Création de storyboards</h4>
+                <p>Pour chaque chapitre, nous créons un storyboard détaillé avec 3 à 7 cases par page, incluant des descriptions visuelles et des dialogues.</p>
+            </div>
+            
+            <div class="feature">
+                <h4>Prompts pour Midjourney</h4>
+                <p>Nous générons des prompts optimisés pour Midjourney pour chaque case, vous permettant de créer facilement les images de votre BD.</p>
+            </div>
         </div>
     </div>
+    
+    <script src="js/main.js"></script>
 </body>
 </html>
+
