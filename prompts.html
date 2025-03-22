@@ -3,29 +3,335 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prompts Midjourney - BD Creator</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <title>Prompts - BD Creator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1, h2, h3, h4 {
+            color: #333;
+        }
+        .prompt-card {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            border-left: 4px solid #9b59b6;
+        }
+        .prompt-text {
+            background-color: #f1e5f9;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            margin-top: 10px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .copy-button {
+            background-color: #9b59b6;
+            cursor: pointer;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            color: #777;
+        }
+        .error {
+            color: #e74c3c;
+            padding: 10px;
+            background-color: #fadbd8;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .copied {
+            background-color: #2ecc71;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <h1>BD Creator</h1>
-    </header>
-    
-    <nav>
-        <a href="index.html">Accueil</a>
-        <a href="scenario.html">Scénario</a>
-        <a href="storyboard.html">Storyboard</a>
-        <a href="prompts.html" class="active">Prompts</a>
-    </nav>
-    
     <div class="container">
-        <h2>Prompts Midjourney pour le chapitre : <span id="chapter-title"></span></h2>
-        <p>Voici les prompts générés pour chaque case du storyboard. Vous pouvez copier ces prompts et les utiliser dans Midjourney pour générer les images de votre BD.</p>
+        <h1>BD Creator - Prompts</h1>
         
-        <div id="prompts-container" class="prompts-container">
-            <p>Chargement des prompts...</p>
+        <div class="navigation">
+            <p>
+                <a href="index.html" class="button">Accueil</a>
+                <a href="scenario.html" class="button">Scénario</a>
+                <a href="storyboard.html" class="button">Storyboard</a>
+            </p>
+        </div>
+        
+        <div id="prompts-container">
+            <h2 id="chapter-title">Prompts pour le chapitre : <span id="chapter-name">Chargement...</span></h2>
+            <p>Voici les prompts générés pour Midjourney pour chaque case du storyboard. Vous pouvez les copier et les utiliser directement dans Midjourney pour créer les images de votre BD.</p>
+            
+            <div id="prompts-content" class="loading">
+                Chargement des prompts...
+            </div>
         </div>
     </div>
+
+    <script>
+        // Fonction pour récupérer les paramètres de l'URL
+        function getUrlParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        // Fonction pour copier le texte dans le presse-papiers
+        function copyToClipboard(text, buttonElement) {
+            navigator.clipboard.writeText(text).then(function() {
+                // Changer le texte du bouton temporairement
+                const originalText = buttonElement.textContent;
+                buttonElement.textContent = "Copié !";
+                buttonElement.classList.add("copied");
+                
+                // Rétablir le texte original après 2 secondes
+                setTimeout(function() {
+                    buttonElement.textContent = originalText;
+                    buttonElement.classList.remove("copied");
+                }, 2000);
+            }, function(err) {
+                console.error('Erreur lors de la copie: ', err);
+                alert("Erreur lors de la copie. Veuillez sélectionner et copier manuellement.");
+            });
+        }
+
+        // Fonction pour générer des prompts Midjourney pour un chapitre
+        function generatePrompts(chapterId, chapterTitle) {
+            const promptsContent = document.getElementById('prompts-content');
+            let html = '';
+            
+            // Déterminer le nombre de pages en fonction du chapitre
+            let pageCount;
+            switch(chapterId) {
+                case '1': pageCount = 10; break;
+                case '2': pageCount = 12; break;
+                case '3': pageCount = 8; break;
+                case '4': pageCount = 10; break;
+                case '5': pageCount = 8; break;
+                default: pageCount = 10;
+            }
+            
+            // Générer des prompts pour chaque page et chaque case
+            for (let i = 1; i <= pageCount; i++) {
+                html += `<h3>Page ${i}</h3>`;
+                
+                // Nombre de cases par page (entre 3 et 7)
+                const caseCount = Math.floor(Math.random() * 5) + 3;
+                
+                for (let j = 1; j <= caseCount; j++) {
+                    // Générer des prompts fictifs basés sur le chapitre
+                    let promptText, description;
+                    
+                    if (chapterId == 1) {
+                        // Chapitre 1: Le Début du Voyage
+                        const descriptions = [
+                            "Notre héros observe l'artefact mystérieux avec curiosité.",
+                            "L'artefact commence à briller d'une lumière étrange.",
+                            "Un portail s'ouvre devant notre héros, révélant un monde inconnu.",
+                            "Notre héros hésite devant l'entrée du portail.",
+                            "Une silhouette mystérieuse apparaît de l'autre côté du portail.",
+                            "Notre héros prend une profonde inspiration et fait un pas en avant.",
+                            "Le paysage autour de lui se transforme complètement."
+                        ];
+                        
+                        description = descriptions[Math.floor(Math.random() * descriptions.length)];
+                        
+                        const styles = [
+                            "style de bande dessinée européenne, ligne claire",
+                            "style manga détaillé, encre noire",
+                            "aquarelle douce, couleurs pastel",
+                            "illustration fantasy moderne",
+                            "style graphique épuré, couleurs vives"
+                        ];
+                        
+                        const style = styles[Math.floor(Math.random() * styles.length)];
+                        
+                        promptText = `/imagine a young adventurer discovering a glowing ancient artifact, curious expression, ${style}, detailed background, dramatic lighting --ar 2:3 --v 5.2`;
+                    } 
+                    else if (chapterId == 2) {
+                        // Chapitre 2: Rencontres Inattendues
+                        const descriptions = [
+                            "Notre héros rencontre un personnage étrange aux vêtements colorés.",
+                            "Un groupe de créatures hostiles apparaît au loin.",
+                            "Une femme mystérieuse offre son aide à notre héros.",
+                            "Notre héros et ses nouveaux alliés discutent autour d'un feu de camp.",
+                            "Un ennemi masqué observe le groupe depuis les ombres.",
+                            "Notre héros apprend à utiliser un pouvoir nouvellement découvert.",
+                            "Le groupe traverse un paysage fantastique jamais vu auparavant."
+                        ];
+                        
+                        description = descriptions[Math.floor(Math.random() * descriptions.length)];
+                        
+                        const styles = [
+                            "style bande dessinée franco-belge",
+                            "style manga shonen dynamique",
+                            "illustration fantasy détaillée",
+                            "style graphique moderne, couleurs contrastées",
+                            "style semi-réaliste, éclairage cinématographique"
+                        ];
+                        
+                        const style = styles[Math.floor(Math.random() * styles.length)];
+                        
+                        promptText = `/imagine protagonist meeting strange allies in a fantasy world, colorful clothing, expressive faces, ${style}, detailed environment, dynamic composition --ar 2:3 --v 5.2`;
+                    }
+                    else if (chapterId == 3) {
+                        // Chapitre 3: L'Épreuve du Feu
+                        const descriptions = [
+                            "Notre héros fait face à un mur de flammes qui bloque le passage.",
+                            "Le groupe est encerclé par des ennemis menaçants.",
+                            "Notre héros doit traverser un pont suspendu au-dessus d'un gouffre.",
+                            "Un duel s'engage entre notre héros et l'antagoniste.",
+                            "Notre héros utilise son pouvoir à pleine puissance pour la première fois.",
+                            "Un allié tombe au combat, protégeant notre héros.",
+                            "Notre héros découvre une vérité bouleversante sur son passé."
+                        ];
+                        
+                        description = descriptions[Math.floor(Math.random() * descriptions.length)];
+                        
+                        const styles = [
+                            "style dramatique, couleurs chaudes",
+                            "style manga intense, lignes dynamiques",
+                            "illustration héroïque, contraste fort",
+                            "style bande dessinée américaine, action",
+                            "style semi-réaliste, éclairage dramatique"
+                        ];
+                        
+                        const style = styles[Math.floor(Math.random() * styles.length)];
+                        
+                        promptText = `/imagine hero facing a wall of fire, determined expression, trial by fire, ${style}, intense atmosphere, dramatic lighting, action scene --ar 2:3 --v 5.2`;
+                    }
+                    else if (chapterId == 4) {
+                        // Chapitre 4: Révélations
+                        const descriptions = [
+                            "Notre héros découvre une ancienne bibliothèque contenant des secrets oubliés.",
+                            "Un sage révèle la véritable origine de l'artefact.",
+                            "Notre héros a une vision du passé qui explique tout.",
+                            "L'antagoniste dévoile son vrai visage et ses motivations.",
+                            "Notre héros comprend enfin son rôle dans une prophétie ancienne.",
+                            "Le groupe découvre un temple caché qui renferme la clé de tout.",
+                            "Notre héros retrouve quelqu'un qu'il croyait perdu à jamais."
+                        ];
+                        
+                        description = descriptions[Math.floor(Math.random() * descriptions.length)];
+                        
+                        const styles = [
+                            "style mystique, couleurs éthérées",
+                            "style bande dessinée contemplative",
+                            "illustration détaillée, ambiance mystérieuse",
+                            "style manga introspectif, moments de révélation",
+                            "style symbolique, composition significative"
+                        ];
+                        
+                        const style = styles[Math.floor(Math.random() * styles.length)];
+                        
+                        promptText = `/imagine character discovering ancient library with forgotten secrets, moment of revelation, ${style}, mystical atmosphere, glowing artifacts, detailed ancient architecture --ar 2:3 --v 5.2`;
+                    }
+                    else if (chapterId == 5) {
+                        // Chapitre 5: Le Dénouement
+                        const descriptions = [
+                            "Notre héros se prépare pour l'affrontement final.",
+                            "Une bataille épique s'engage entre les forces du bien et du mal.",
+                            "Notre héros utilise l'artefact pour refermer la brèche entre les mondes.",
+                            "L'antagoniste tente une dernière manœuvre désespérée.",
+                            "Notre héros fait un choix qui changera tout.",
+                            "Le monde commence à se reconstruire après le chaos.",
+                            "Notre héros contemple son avenir, transformé par son voyage."
+                        ];
+                        
+                        description = descriptions[Math.floor(Math.random() * descriptions.length)];
+                        
+                        const styles = [
+                            "style épique, composition grandiose",
+                            "style bande dessinée climactique",
+                            "illustration finale dramatique",
+                            "style manga épique, moment décisif",
+                            "style cinématique, plan large impressionnant"
+                        ];
+                        
+                        const style = styles[Math.floor(Math.random() * styles.length)];
+                        
+                        promptText = `/imagine epic final battle, hero using artifact to close portal between worlds, ${style}, dramatic sky, energy effects, climactic moment, detailed environment --ar 2:3 --v 5.2`;
+                    }
+                    else {
+                        // Chapitre par défaut si l'ID n'est pas reconnu
+                        description = `Description de la case ${j} (chapitre ${chapterId}, page ${i})`;
+                        promptText = `/imagine comic book panel, fantasy adventure, detailed scene, vibrant colors --ar 2:3 --v 5.2`;
+                    }
+                    
+                    html += `
+                    <div class="prompt-card">
+                        <h4>Case ${j} - Page ${i}</h4>
+                        <p><strong>Description :</strong> ${description}</p>
+                        <div class="prompt-text">${promptText}</div>
+                        <button class="button copy-button" onclick="copyToClipboard('${promptText}', this)">Copier le prompt</button>
+                    </div>`;
+                }
+            }
+            
+            promptsContent.innerHTML = html;
+            promptsContent.classList.remove('loading');
+        }
+
+        // Fonction principale qui s'exécute au chargement de la page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Récupérer les paramètres de l'URL
+            const chapterId = getUrlParameter('chapter');
+            const chapterTitle = getUrlParameter('title');
+            
+            // Mettre à jour le titre avec le numéro et le nom du chapitre
+            const chapterNameElement = document.getElementById('chapter-name');
+            
+            if (chapterId && chapterTitle) {
+                chapterNameElement.textContent = `${chapterId}. ${chapterTitle}`;
+                
+                // Générer les prompts pour ce chapitre
+                generatePrompts(chapterId, chapterTitle);
+            } else {
+                // Afficher un message d'erreur si aucun chapitre n'est spécifié
+                const promptsContent = document.getElementById('prompts-content');
+                promptsContent.innerHTML = `
+                    <div class="error">
+                        <p>Erreur : Aucun chapitre spécifié.</p>
+                        <p>Veuillez d'abord sélectionner un chapitre depuis la page storyboard.</p>
+                    </div>
+                    <p><a href="scenario.html" class="button">Retour au scénario</a></p>
+                `;
+                promptsContent.classList.remove('loading');
+                chapterNameElement.textContent = "Non spécifié";
+            }
+        });
+    </script>
+</body>
+</html>
+
     
     <script src="js/main.js"></script>
 </body>
