@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BD Creator - Contrôles de session manuels</title>
+    <style>
+        .session-controls {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .session-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .session-button {
+            background-color: #2980b9;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-right: 10px;
+            cursor: pointer;
+            border: none;
+        }
+        .session-select {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            background-color: white;
+            min-width: 200px;
+        }
+        .session-info {
+            margin-top: 10px;
+            font-style: italic;
+            color: #555;
+        }
+        #new-session-btn {
+            background-color: #27ae60;
+        }
+        #delete-session-btn {
+            background-color: #e74c3c;
+        }
+        
+        /* Instructions */
+        .instructions {
+            background-color: #e8f4f8;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3498db;
+        }
+        .code-block {
+            background-color: #f8f8f8;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>BD Creator - Contrôles de session manuels</h1>
+        
+        <div class="instructions">
+            <h2>Instructions pour ajouter manuellement les contrôles de session</h2>
+            <p>Si le gestionnaire de sessions ne parvient pas à ajouter automatiquement les contrôles, vous pouvez les ajouter manuellement en suivant ces étapes :</p>
+            
+            <h3>1. Copiez le bloc HTML suivant :</h3>
+            <div class="code-block">&lt;div class="session-controls"&gt;
+    &lt;div class="session-buttons"&gt;
+        &lt;button id="save-session-btn" class="button session-button"&gt;Sauvegarder la session&lt;/button&gt;
+        &lt;button id="new-session-btn" class="button session-button"&gt;Nouvelle session&lt;/button&gt;
+        &lt;select id="load-session-select" class="session-select"&gt;
+            &lt;option value=""&gt;Charger une session...&lt;/option&gt;
+        &lt;/select&gt;
+    &lt;/div&gt;
+    &lt;div id="session-info" class="session-info"&gt;
+        Session actuelle: &lt;span id="current-session-name"&gt;Nouvelle session&lt;/span&gt;
+    &lt;/div&gt;
+&lt;/div&gt;</div>
+            
+            <h3>2. Copiez les styles CSS suivants :</h3>
+            <div class="code-block">&lt;style&gt;
+    .session-controls {
+        background-color: #f0f0f0;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    .session-buttons {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    .session-button {
+        background-color: #2980b9;
+        color: white;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: bold;
+        margin-right: 10px;
+        cursor: pointer;
+        border: none;
+    }
+    .session-select {
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+        background-color: white;
+        min-width: 200px;
+    }
+    .session-info {
+        margin-top: 10px;
+        font-style: italic;
+        color: #555;
+    }
+    #new-session-btn {
+        background-color: #27ae60;
+    }
+    #delete-session-btn {
+        background-color: #e74c3c;
+    }
+&lt;/style&gt;</div>
+            
+            <h3>3. Insérez le bloc HTML dans chaque fichier HTML :</h3>
+            <p>Placez le bloc HTML juste après l'ouverture de votre div principal avec la classe "container" :</p>
+            <div class="code-block">&lt;div class="container"&gt;
+    &lt;h1&gt;BD Creator - [Titre de la page]&lt;/h1&gt;
+    
+    <!-- Insérer les contrôles de session ici -->
+    &lt;div class="session-controls"&gt;
+        ...
+    &lt;/div&gt;
+    
+    &lt;div class="navigation"&gt;
+        ...
+    &lt;/div&gt;
+    
+    <!-- Reste du contenu -->
+&lt;/div&gt;</div>
+            
+            <h3>4. Insérez les styles CSS dans chaque fichier HTML :</h3>
+            <p>Placez les styles CSS dans la section head de chaque fichier HTML :</p>
+            <div class="code-block">&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;BD Creator&lt;/title&gt;
+    
+    <!-- Styles existants -->
+    &lt;style&gt;
+        /* Styles existants */
+    &lt;/style&gt;
+    
+    <!-- Styles pour les contrôles de session -->
+    &lt;style&gt;
+        .session-controls {
+            ...
+        }
+        ...
+    &lt;/style&gt;
+&lt;/head&gt;</div>
+            
+            <h3>5. Assurez-vous que le script du gestionnaire de sessions est bien inclus :</h3>
+            <p>Vérifiez que cette ligne est présente à la fin de chaque fichier HTML, juste avant la fermeture de la balise body :</p>
+            <div class="code-block">&lt;script src="js/bd_creator_session_manager.js"&gt;&lt;/script&gt;</div>
+            
+            <p>Si vos fichiers HTML sont dans le dossier js, utilisez :</p>
+            <div class="code-block">&lt;script src="bd_creator_session_manager.js"&gt;&lt;/script&gt;</div>
+            
+            <p>Si vos fichiers HTML sont dans le dossier css, utilisez :</p>
+            <div class="code-block">&lt;script src="../js/bd_creator_session_manager.js"&gt;&lt;/script&gt;</div>
+        </div>
+        
+        <h2>Exemple de contrôles de session</h2>
+        <p>Voici à quoi devraient ressembler les contrôles de session :</p>
+        
+        <!-- Exemple de contrôles de session -->
+        <div class="session-controls">
+            <div class="session-buttons">
+                <button id="save-session-btn" class="session-button">Sauvegarder la session</button>
+                <button id="new-session-btn" class="session-button">Nouvelle session</button>
+                <select id="load-session-select" class="session-select">
+                    <option value="">Charger une session...</option>
+                    <option value="example1">Ma BD Science-Fiction (01/01/2025, 12:00:00)</option>
+                    <option value="example2">Ma BD Fantasy (02/01/2025, 14:30:00)</option>
+                </select>
+            </div>
+            <div id="session-info" class="session-info">
+                Session actuelle: <span id="current-session-name">Nouvelle session</span>
+            </div>
+        </div>
+        
+        <h2>Débogage du gestionnaire de sessions</h2>
+        <p>Si vous rencontrez toujours des problèmes après avoir ajouté manuellement les contrôles, essayez d'utiliser la version de débogage du gestionnaire de sessions :</p>
+        <ol>
+            <li>Remplacez votre fichier bd_creator_session_manager.js par la version de débogage fournie</li>
+            <li>Ouvrez la console du navigateur (F12) pour voir les messages de débogage</li>
+            <li>Vérifiez s'il y a des erreurs ou des avertissements</li>
+        </ol>
+        
+        <p><a href="#" onclick="window.history.back(); return false;">Retour</a></p>
+    </div>
+</body>
+</html>
