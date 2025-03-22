@@ -1,5 +1,5 @@
 /**
- * BD Creator - Gestionnaire de sessions (Version finale)
+ * BD Creator - Gestionnaire de sessions (Version de débogage)
  * Ce script permet de sauvegarder et charger des sessions de création de BD
  * Adapté pour fonctionner avec la structure de dossiers spécifique du projet
  */
@@ -7,9 +7,9 @@
 // Classe principale pour gérer les sessions
 class SessionManager {
     constructor() {
+        console.log("Initialisation du gestionnaire de sessions");
         this.currentSessionId = null;
         this.sessions = this.loadAllSessions();
-        this.initUI();
         
         // Vérifier si nous sommes sur une nouvelle session
         const isNewSession = sessionStorage.getItem('bdNewSession');
@@ -17,19 +17,27 @@ class SessionManager {
             console.log("Nouvelle session détectée");
             // Réinitialiser le marqueur
             sessionStorage.removeItem('bdNewSession');
-            // Mettre à jour l'interface
-            this.updateCurrentSessionInfo('Nouvelle session');
         }
+        
+        // Initialiser l'UI avec un délai pour s'assurer que le DOM est chargé
+        setTimeout(() => {
+            this.initUI();
+        }, 500);
     }
 
     // Initialiser l'interface utilisateur pour la gestion des sessions
     initUI() {
+        console.log("Initialisation de l'UI du gestionnaire de sessions");
+        console.log("Container trouvé:", !!document.querySelector('.container'));
+        console.log("Navigation trouvée:", !!document.querySelector('.navigation'));
+        
         // Créer le conteneur pour les contrôles de session s'il n'existe pas déjà
         if (!document.getElementById('session-controls')) {
             const container = document.querySelector('.container');
-            const navigationDiv = document.querySelector('.navigation');
             
-            if (container && navigationDiv) {
+            if (container) {
+                console.log("Container trouvé, insertion des contrôles de session");
+                
                 const sessionControls = document.createElement('div');
                 sessionControls.id = 'session-controls';
                 sessionControls.className = 'session-controls';
@@ -46,7 +54,14 @@ class SessionManager {
                     </div>
                 `;
                 
-                container.insertBefore(sessionControls, navigationDiv.nextSibling);
+                // Insérer au début du container si navigation n'existe pas
+                const navigationDiv = document.querySelector('.navigation');
+                if (navigationDiv) {
+                    container.insertBefore(sessionControls, navigationDiv.nextSibling);
+                } else {
+                    // Insérer au début du container
+                    container.insertBefore(sessionControls, container.firstChild);
+                }
                 
                 // Ajouter les styles CSS pour les contrôles de session
                 if (!document.getElementById('session-manager-styles')) {
@@ -70,6 +85,14 @@ class SessionManager {
                         }
                         .session-button {
                             background-color: #2980b9;
+                            color: white;
+                            padding: 10px 20px;
+                            text-decoration: none;
+                            border-radius: 5px;
+                            font-weight: bold;
+                            margin-right: 10px;
+                            cursor: pointer;
+                            border: none;
                         }
                         .session-select {
                             padding: 10px;
@@ -95,36 +118,62 @@ class SessionManager {
                 
                 // Ajouter les écouteurs d'événements
                 this.addEventListeners();
+            } else {
+                console.error("Container non trouvé, impossible d'initialiser l'UI du gestionnaire de sessions");
             }
+        } else {
+            console.log("Les contrôles de session existent déjà");
         }
         
         // Mettre à jour la liste des sessions disponibles
         this.updateSessionsList();
+        
+        // Mettre à jour l'information sur la session actuelle
+        if (this.currentSessionId && this.sessions[this.currentSessionId]) {
+            this.updateCurrentSessionInfo(this.sessions[this.currentSessionId].name);
+        } else {
+            this.updateCurrentSessionInfo('Nouvelle session');
+        }
     }
     
     // Ajouter les écouteurs d'événements pour les boutons
     addEventListeners() {
+        console.log("Ajout des écouteurs d'événements");
+        
         const saveButton = document.getElementById('save-session-btn');
         const newButton = document.getElementById('new-session-btn');
         const loadSelect = document.getElementById('load-session-select');
         
         if (saveButton) {
-            saveButton.addEventListener('click', () => this.saveCurrentSession());
+            saveButton.addEventListener('click', () => {
+                console.log("Clic sur Sauvegarder la session");
+                this.saveCurrentSession();
+            });
+        } else {
+            console.error("Bouton 'save-session-btn' non trouvé");
         }
         
         if (newButton) {
-            newButton.addEventListener('click', () => this.startNewSession());
+            newButton.addEventListener('click', () => {
+                console.log("Clic sur Nouvelle session");
+                this.startNewSession();
+            });
+        } else {
+            console.error("Bouton 'new-session-btn' non trouvé");
         }
         
         if (loadSelect) {
             loadSelect.addEventListener('change', (e) => {
                 const sessionId = e.target.value;
                 if (sessionId) {
+                    console.log("Sélection d'une session à charger:", sessionId);
                     this.loadSession(sessionId);
                     // Réinitialiser le sélecteur
                     e.target.value = '';
                 }
             });
+        } else {
+            console.error("Sélecteur 'load-session-select' non trouvé");
         }
     }
     
@@ -180,7 +229,7 @@ class SessionManager {
         alert('Session sauvegardée avec succès !');
     }
     
-    // Démarrer une nouvelle session (FONCTION CORRIGÉE)
+    // Démarrer une nouvelle session
     startNewSession() {
         if (confirm('Voulez-vous vraiment commencer une nouvelle session ? Les modifications non sauvegardées seront perdues.')) {
             try {
@@ -311,6 +360,8 @@ class SessionManager {
         const sessionNameElement = document.getElementById('current-session-name');
         if (sessionNameElement) {
             sessionNameElement.textContent = sessionName;
+        } else {
+            console.error("Élément 'current-session-name' non trouvé");
         }
     }
     
@@ -328,11 +379,14 @@ class SessionManager {
 
 // Initialiser le gestionnaire de sessions lorsque la page est chargée
 document.addEventListener('DOMContentLoaded', function() {
+    console.log("DOM chargé, initialisation du gestionnaire de sessions...");
+    
     // Petit délai pour s'assurer que le DOM est complètement chargé
     setTimeout(function() {
-        console.log("Initialisation du gestionnaire de sessions...");
+        console.log("Création de l'instance SessionManager");
         window.bdSessionManager = new SessionManager();
-    }, 100);
+    }, 500);
 });
+
 
 
