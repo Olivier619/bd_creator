@@ -38,6 +38,8 @@
             border-radius: 5px;
             font-weight: bold;
             margin-top: 10px;
+            cursor: pointer;
+            border: none;
         }
         input[type="text"] {
             width: 100%;
@@ -49,6 +51,45 @@
         }
         .steps {
             margin-left: 20px;
+        }
+        .session-controls {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .session-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .session-button {
+            background-color: #2980b9;
+        }
+        .session-select {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            background-color: white;
+            min-width: 200px;
+        }
+        .session-info {
+            margin-top: 10px;
+            font-style: italic;
+            color: #555;
+        }
+        #new-session-btn {
+            background-color: #27ae60;
+        }
+        #delete-session-btn {
+            background-color: #e74c3c;
+        }
+        .navigation {
+            margin-bottom: 20px;
         }
     </style>
 </head>
@@ -97,6 +138,11 @@
                 <h4>Prompts pour Midjourney</h4>
                 <p>Nous générons des prompts optimisés pour Midjourney pour chaque case, vous permettant de créer facilement les images de votre BD.</p>
             </div>
+            
+            <div class="feature">
+                <h4>Sauvegarde de sessions</h4>
+                <p>Vous pouvez sauvegarder votre travail à tout moment et créer plusieurs projets de BD différents.</p>
+            </div>
         </div>
     </div>
 
@@ -115,6 +161,9 @@
             window.location.href = 'scenario.html';
         }
     </script>
+    
+    <!-- Inclure le gestionnaire de sessions -->
+    <script src="bd_creator_session_manager.js"></script>
 </body>
 </html>
 
