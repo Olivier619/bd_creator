@@ -209,25 +209,26 @@
     </script>
 </body>
 </html>
-<script>
 // Solution directe pour le bouton "Nouvelle session"
 document.addEventListener('DOMContentLoaded', function() {
     const newButton = document.getElementById('new-session-btn');
     if (newButton) {
         newButton.onclick = function() {
             if (confirm('Voulez-vous vraiment commencer une nouvelle session ? Les modifications non sauvegardées seront perdues.')) {
-                // Effacer les données de session
-                localStorage.removeItem('bdKeywords');
-                localStorage.removeItem('bdScenario');
-                localStorage.removeItem('bdChapter');
-                localStorage.removeItem('bdStoryboard');
-                localStorage.removeItem('currentSessionId');
+                // Nettoyage complet du localStorage
+                for (let key in localStorage) {
+                    if (key.startsWith('bd') || key === 'currentSessionId') {
+                        localStorage.removeItem(key);
+                    }
+                }
                 
-                // Redirection directe
-                window.location.href = 'index.html';
+                // Ajouter un paramètre unique pour forcer le rechargement complet
+                const timestamp = new Date().getTime();
+                window.location.href = 'index.html?new=' + timestamp;
+                return false;
             }
         };
     }
 });
-</script>
+
 
