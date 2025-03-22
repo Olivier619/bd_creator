@@ -303,3 +303,4 @@ document.addEventListener('DOMContentLoaded', function() {
         window.bdSessionManager = new SessionManager();
     }, 100);
 });
+
